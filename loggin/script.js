@@ -80,6 +80,11 @@ function navigateToMenu() {
     saveTheme(currentTheme);
     window.location.href = 'menu.html';
 }
+function navigateToQuince() {
+    saveTheme(currentTheme);
+    window.location.href = 'quince.html';
+}
+
 
 // Inicialización común para todas las páginas
 function initSharedComponents() {
@@ -330,4 +335,5 @@ function resetGame() {
     }
     
     initHanoiGame();
+
 }
