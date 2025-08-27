@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="loggin/styles.css">
+    <script src="loggin/script.js" defer></script>
+    <title>Math Easy</title>
+</head>
+<body>
+    
+    <div class="container">
+        <!-- Pantalla de Login -->
+        <div id="loginScreen" class="login-screen">
+            <div class="logo">MATH = (EASY)</div>
+            
+            <div class="color-palette">
+                <div class="color-btn black" data-color="black"></div>
+                <div class="color-btn red" data-color="red"></div>
+                <div class="color-btn yellow" data-color="yellow"></div>
+                <div class="color-btn green" data-color="green"></div>
+                <div class="color-btn blue active" data-color="blue"></div>
+                <div class="color-btn purple" data-color="purple"></div>
+                <div class="color-btn white" data-color="white"></div>
+            </div>
+            
+            <div class="login-form">
+                <input type="password" class="id-input" placeholder="ID" id="passwordInput">
+                <button class="login-btn" onclick="login()">Iniciar sesión</button>
+                <div id="errorMessage" class="error-message hidden">Contraseña incorrecta</div>
+            </div>
+        </div>
+
+
+</body>
+</html>

@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="loggin/styles.css">
+    <script src="loggin/script.js" defer></script>
+    <title>Menu</title>
+</head>
+<body onload="initSharedComponents()">
+    <div class="container">
+        <div id="menuScreen" class="menu-screen">
+            <div class="menu-header">
+                <div class="menu-title">MATH = (EASY)</div>
+            </div>
+            
+            <div class="menu-buttons">
+                <button class="menu-btn" onclick="startGame('torres-hanoi')">Torres Hanoi</button>
+                <button class="menu-btn" onclick="startGame('ordena-15')">Ordena 15</button>
+                <button class="menu-btn" onclick="startGame('piramides-peg')">Pirámides Peg</button>
+                <button class="menu-btn" onclick="startGame('2048')">2048</button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

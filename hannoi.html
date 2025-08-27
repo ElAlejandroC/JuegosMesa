@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="loggin/styles.css">
+    <script src="loggin/script.js" defer></script>
+    <title>Hannoi</title>
+</head>
+<body onload="initHanoiGame()">
+
+<!-- Pantalla de Juego -->
+<div class="container">
+        <div id="gameScreen" class="game-screen">
+            <div class="game-header">
+                <div class="game-title">Torres Hanoi</div>
+            </div>
+            
+            <div class="hanoi-game">
+                <div class="towers-container" id="towersContainer">
+                    <div class="tower" data-tower="0" onclick="selectTower(0)"></div>
+                    <div class="tower" data-tower="1" onclick="selectTower(1)"></div>
+                    <div class="tower" data-tower="2" onclick="selectTower(2)"></div>
+                </div>
+                
+                <div class="game-controls">
+                    <button class="control-btn" onclick="resetGame()">Reiniciar</button>
+                    <div class="moves-counter">
+                        <div>Movimientos: <span id="movesCount">0</span></div>
+                        <div>Max Mov: <span id="maxMoves">63</span></div>
+                    </div>
+                    <button class="control-btn" onclick="goToMenu()">Menú</button>
+                </div>
+                
+                <div class="stats">
+                    <span>Tiempo total: <span id="timeCount">00:00</span></span>
+                    <span>% de afinidad: <span id="affinity">100%</span></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pantalla de Victoria -->
+        <div id="victoryScreen" class="victory-screen">
+            <div class="victory-content">
+                <div class="victory-title">¡GANASTE!</div>
+                
+                <div class="victory-stats">
+                    <div class="victory-stat">Tiempo total: <span id="finalTime">xx:xx</span></div>
+                    <div class="victory-stat">Movimientos totales: <span id="finalMoves">xx</span></div>
+                    <div class="victory-stat">% de afinidad: <span id="finalAffinity">xx%</span></div>
+                </div>
+                
+                <div class="victory-buttons">
+                    <button class="menu-btn" onclick="goToMenu()">Ir a Menú Principal</button>
+                    <button class="control-btn" onclick="resetGame()">Reiniciar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</body>
+</html>
