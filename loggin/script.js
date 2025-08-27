@@ -143,7 +143,11 @@ function login() {
 function startGame(gameType) {
     if (gameType === 'torres-hanoi') {
         navigateToHanoi();
-    } else {
+    }
+    if (gameType === 'ordena-15') {
+        navigateToQuince();
+    }
+    else {
         alert('Juego no implementado aún: ' + gameType);
     }
 }
@@ -337,3 +341,4 @@ function resetGame() {
     initHanoiGame();
 
 }
+
