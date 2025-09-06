@@ -76,9 +76,13 @@ function esGanado(tablero) {
             return tablero[15] === 0;
 
         case 'inverso':
-            for (let i = 0; i < 15; i++) if (tablero[i] !== 15 - i) return false;
-            return tablero[15] === 0;
-
+            // Queremos [0, 15, 14, ..., 2, 1]
+            if (tablero[0] !== 0) return false;
+            for (let i = 1; i < 16; i++) {
+                if (tablero[i] !== 16 - i) return false;
+            }
+            return true;
+            
         case 'vertical':
             const vertical = [1,5,9,13,2,6,10,14,3,7,11,15,4,8,12,0];
             for (let i = 0; i < 16; i++) if (tablero[i] !== vertical[i]) return false;
@@ -104,7 +108,8 @@ function actualizarDataSolution() {
             orden = [...Array(15).keys()].map(i => i + 1).concat(0);
             break;
         case 'inverso':
-            orden = [...Array(15).keys()].map(i => 15 - i).concat(0);
+            // Solución esperada: [0, 15, 14, ..., 2, 1]
+            orden = [0].concat([...Array(15).keys()].map(i => 15 - i));
             break;
         case 'vertical':
             orden = [1,5,9,13,2,6,10,14,3,7,11,15,4,8,12,0];
@@ -131,3 +136,4 @@ btnSol.addEventListener('click', () => {
 });
 
 actualizarDataSolution();
+
