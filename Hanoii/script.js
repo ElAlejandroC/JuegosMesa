@@ -1,34 +1,30 @@
+// =============================
+// TORRES DE HANOI
+// =============================
 
-// Funciones de navegación para hanoi.html
+// Estado del juego
+let gameState = {};
+
+// Navegación
 function goToMenu() {
-    // Detener juego si está corriendo
-    if (typeof stopTimer === 'function') {
-        stopTimer();
-    }
-    if (typeof clearHighlight === 'function') {
-        clearHighlight();
-    }
+    stopTimer();
+    clearHighlight();
     navigateToMenu();
 }
 
-// Event listeners comunes
-document.addEventListener('DOMContentLoaded', function() {
-    initSharedComponents();
-    
-    // Setup específico para login
-    const passwordInput = document.getElementById('passwordInput');
-    if (passwordInput) {
-        passwordInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                login();
-            }
-        });
-    }
-});
+// Funciones de navegación
+function navigateToMenu() {
+    window.location.href = 'menu.html';
+}
 
+// Inicializar juego
+function initHanoiGame(diskCount = 4) {
+    // Validar rango de dificultad
+    if (diskCount < 3) diskCount = 3;
+    if (diskCount > 8) diskCount = 8;
 
-function initHanoiGame() {
-    // Reiniciar estado del juego
+    const minMoves = Math.pow(2, diskCount) - 1;
+
     gameState = {
         towers: [[], [], []],
         selectedTower: null,
@@ -36,23 +32,31 @@ function initHanoiGame() {
         startTime: Date.now(),
         gameTime: 0,
         timerInterval: null,
-        diskCount: 4,
-        minMoves: 15
+        diskCount,
+        minMoves
     };
+
     // Inicializar discos en la primera torre
-    for (let i = gameState.diskCount; i >= 1; i--) {
+    for (let i = diskCount; i >= 1; i--) {
         gameState.towers[0].push(i);
     }
+
     updateDisplay();
     startTimer();
+
+    // Actualizar máximo de movimientos en UI
+    document.getElementById('maxMoves').textContent = minMoves;
 }
+
+// =============================
+// DISPLAY
+// =============================
 function updateDisplay() {
-    const towersContainer = document.getElementById('towersContainer');
-    const towers = towersContainer.querySelectorAll('.tower');
-    // Limpiar torres
+    const towers = document.querySelectorAll('.tower');
     towers.forEach(tower => {
         tower.innerHTML = '';
-        // Agregar línea vertical
+
+        // Línea de guía
         const line = document.createElement('div');
         line.style.cssText = `
             position: absolute;
@@ -65,87 +69,116 @@ function updateDisplay() {
         `;
         tower.appendChild(line);
     });
-    // Renderizar discos
+
+    // Dibujar discos
     gameState.towers.forEach((tower, towerIndex) => {
         const towerElement = towers[towerIndex];
+        const towerWidth = towerElement.clientWidth;    
+        const maxDiskWidth = towerWidth * 0.9; // 90% del ancho disponible
+        const minDiskWidth = towerWidth * 0.3; // el más pequeño será 30%
+
+        const step = (maxDiskWidth - minDiskWidth) / (gameState.diskCount - 1);
+
+        // Altura dinámica de la línea guía
+        const line = towerElement.querySelector('div');
+        if (line) {
+            const towerHeight = gameState.diskCount * 25 + 50; // escalar según discos
+            line.style.height = towerHeight + 'px';
+        }
+
         tower.forEach((diskSize, diskIndex) => {
             const disk = document.createElement('div');
-            disk.className = `disk disk-${diskSize}`;
+            disk.className = 'disk';
+        
+            // Ancho proporcional y escalado al contenedor
+            disk.style.width = (minDiskWidth + step * (diskSize - 1)) + 'px';
+            disk.style.height = '20px';
+            disk.style.margin = '2px auto';
+        
+            // Color cíclico
+            const hue = (diskSize * 45) % 360;
+            disk.style.backgroundColor = `hsl(${hue}, 70%, 50%)`;
+        
             disk.onclick = () => selectDisk(towerIndex, diskIndex);
             towerElement.appendChild(disk);
         });
     });
-    // Actualizar contador de movimientos
+
+
+    // Actualizar stats
     document.getElementById('movesCount').textContent = gameState.moves;
-    
-    // Actualizar afinidad
-    const affinity = Math.max(0, Math.round((gameState.minMoves / Math.max(gameState.moves, 1)) * 100));
+    const affinity = Math.max(
+        0,
+        Math.round((gameState.minMoves / Math.max(gameState.moves, 1)) * 100)
+    );
     document.getElementById('affinity').textContent = affinity + '%';
 }
+
+// =============================
+// LÓGICA DEL JUEGO
+// =============================
 function selectTower(towerIndex) {
     if (gameState.selectedTower === null) {
-        // Seleccionar disco superior de la torre
         if (gameState.towers[towerIndex].length > 0) {
             gameState.selectedTower = towerIndex;
             highlightSelectedTower(towerIndex);
         }
     } else {
-        // Intentar mover disco a esta torre
         moveDisk(gameState.selectedTower, towerIndex);
         gameState.selectedTower = null;
         clearHighlight();
     }
 }
+
 function selectDisk(towerIndex, diskIndex) {
-    // Solo permitir seleccionar el disco superior
     if (diskIndex === gameState.towers[towerIndex].length - 1) {
         selectTower(towerIndex);
     }
 }
+
 function moveDisk(fromTower, toTower) {
     const fromStack = gameState.towers[fromTower];
     const toStack = gameState.towers[toTower];
     if (fromStack.length === 0) return false;
+
     const disk = fromStack[fromStack.length - 1];
-    
-    // Verificar si el movimiento es válido
     if (toStack.length === 0 || disk < toStack[toStack.length - 1]) {
         fromStack.pop();
         toStack.push(disk);
         gameState.moves++;
         updateDisplay();
-        
-        // Verificar victoria
+
         if (gameState.towers[2].length === gameState.diskCount) {
             endGame();
         }
-        
+
         return true;
     }
-    
+
     return false;
 }
+
+// =============================
+// UI
+// =============================
 function highlightSelectedTower(towerIndex) {
     const towers = document.querySelectorAll('.tower');
     towers[towerIndex].style.backgroundColor = 'rgba(255, 255, 255, 0.2)';
-    
+
     const topDisk = towers[towerIndex].querySelector('.disk:last-child');
-    if (topDisk) {
-        topDisk.classList.add('selected');
-    }
+    if (topDisk) topDisk.classList.add('selected');
 }
+
 function clearHighlight() {
-    const towers = document.querySelectorAll('.tower');
-    towers.forEach(tower => {
-        tower.style.backgroundColor = '';
-    });
-    
-    const disks = document.querySelectorAll('.disk');
-    disks.forEach(disk => {
-        disk.classList.remove('selected');
-    });
+    document.querySelectorAll('.tower').forEach(t => (t.style.backgroundColor = ''));
+    document.querySelectorAll('.disk').forEach(d => d.classList.remove('selected'));
 }
+
+// =============================
+// TIMER
+// =============================
 function startTimer() {
+    gameState.startTime = Date.now();
     gameState.timerInterval = setInterval(() => {
         gameState.gameTime = Math.floor((Date.now() - gameState.startTime) / 1000);
         const minutes = Math.floor(gameState.gameTime / 60);
@@ -154,36 +187,51 @@ function startTimer() {
             `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
     }, 1000);
 }
+
 function stopTimer() {
     if (gameState.timerInterval) {
         clearInterval(gameState.timerInterval);
         gameState.timerInterval = null;
     }
 }
+
+// =============================
+// FIN DEL JUEGO
+// =============================
 function endGame() {
     stopTimer();
-    
-    // Actualizar estadísticas finales
-    const finalTime = document.getElementById('timeCount').textContent;
-    const finalMoves = gameState.moves;
-    const finalAffinity = document.getElementById('affinity').textContent;
-    
-    document.getElementById('finalTime').textContent = finalTime;
-    document.getElementById('finalMoves').textContent = finalMoves;
-    document.getElementById('finalAffinity').textContent = finalAffinity;
-    
-    // Mostrar pantalla de victoria
+
+    document.getElementById('finalTime').textContent = document.getElementById('timeCount').textContent;
+    document.getElementById('finalMoves').textContent = gameState.moves;
+    document.getElementById('finalAffinity').textContent = document.getElementById('affinity').textContent;
+
     document.getElementById('gameScreen').classList.add('hidden');
     document.getElementById('victoryScreen').classList.add('show-flex');
 }
+
 function resetGame() {
     stopTimer();
     clearHighlight();
-    
+
     if (document.getElementById('victoryScreen').classList.contains('show-flex')) {
         document.getElementById('victoryScreen').classList.remove('show-flex');
         document.getElementById('gameScreen').classList.add('show');
     }
-    
-    initHanoiGame();
+
+    initHanoiGame(gameState.diskCount);
+}
+
+// =============================
+// BOTONES DE DIFICULTAD
+// =============================
+function increaseDifficulty() {
+    if (gameState.diskCount < 8) {
+        initHanoiGame(gameState.diskCount + 1);
+    }
+}
+
+function decreaseDifficulty() {
+    if (gameState.diskCount > 3) {
+        initHanoiGame(gameState.diskCount - 1);
+    }
 }
