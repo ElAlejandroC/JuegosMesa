@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pyramid Peg - Juego de Estrategia</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --primary: #00BFFF;
+      --secondary: #87CEEB;
+      --accent: #f093fb;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --error: #ef4444;
+      --surface: rgba(255, 255, 255, 0.15);
+      --surface-hover: rgba(255, 255, 255, 0.25);
+      --text: #ffffff;
+      --text-muted: rgba(255, 255, 255, 0.8);
+      --peg: #ffffff;
+      --peg-shadow: rgba(0, 0, 0, 0.2);
+      --selected: #fbbf24;
+      --valid-move: #34d399;
+      --board-shadow: rgba(0, 0, 0, 0.3);
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 1rem;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: 
+        radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(255, 135, 135, 0.3) 0%, transparent 50%),
+        radial-gradient(circle at 40% 40%, rgba(120, 219, 226, 0.2) 0%, transparent 50%);
+      pointer-events: none;
+    }
+
+    .game-container {
+      max-width: 500px;
+      width: 100%;
+      background: var(--surface);
+      backdrop-filter: blur(20px);
+      border-radius: 24px;
+      padding: 2rem;
+      box-shadow: 
+        0 25px 50px -12px var(--board-shadow),
+        0 0 0 1px rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      text-align: center;
+      position: relative;
+      z-index: 1;
+    }
+
+    .game-header {
+      margin-bottom: 2rem;
+    }
+
+    .game-title {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 0.5rem;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+      letter-spacing: -0.025em;
+    }
+
+    .game-subtitle {
+      color: var(--text-muted);
+      font-size: 1.1rem;
+      font-weight: 400;
+    }
+
+    .controls {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      background: var(--surface);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 12px;
+      color: var(--text);
+      padding: 0.75rem 1.5rem;
+      font-size: 0.95rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      backdrop-filter: blur(10px);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: left 0.5s;
+    }
+
+    .btn:hover::before {
+      left: 100%;
+    }
+
+    .btn:hover {
+      background: var(--surface-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .status-container {
+      margin-bottom: 2rem;
+    }
+
+    .counter {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 0.75rem;
+      padding: 0.75rem 1.5rem;
+      background: var(--surface);
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .status {
+      font-size: 1rem;
+      font-weight: 500;
+      padding: 0.75rem 1.5rem;
+      border-radius: 12px;
+      transition: all 0.3s ease;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: var(--surface);
+      color: var(--text);
+    }
+
+    .status.win {
+      background: var(--success);
+      color: white;
+      box-shadow: 0 4px 20px rgba(16, 185, 129, 0.3);
+      animation: celebrateWin 0.6s ease-out;
+    }
+
+    .status.lose {
+      background: var(--error);
+      color: white;
+      box-shadow: 0 4px 20px rgba(239, 68, 68, 0.3);
+    }
+
+    @keyframes celebrateWin {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+
+    .board {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 2rem;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+    }
+
+    .board-row {
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    .peg-hole {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.1);
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .peg-hole::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      transition: all 0.3s ease;
+    }
+
+    .peg-hole:hover::before {
+      width: 100%;
+      height: 100%;
+    }
+
+    .peg-hole.peg {
+      background: var(--peg);
+      border-color: rgba(255, 255, 255, 0.4);
+      box-shadow: 
+        0 4px 15px var(--peg-shadow),
+        inset 0 2px 4px rgba(255, 255, 255, 0.3),
+        inset 0 -2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .peg-hole.peg::after {
+      content: '';
+      position: absolute;
+      top: 15%;
+      left: 25%;
+      width: 30%;
+      height: 30%;
+      background: rgba(255, 255, 255, 0.6);
+      border-radius: 50%;
+      filter: blur(2px);
+    }
+
+    .peg-hole.empty {
+      background: rgba(0, 0, 0, 0.2);
+      border-color: rgba(255, 255, 255, 0.1);
+      box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    .peg-hole.selected {
+      background: var(--selected);
+      border-color: #f59e0b;
+      transform: scale(1.1);
+      box-shadow: 
+        0 8px 25px rgba(251, 191, 36, 0.4),
+        0 0 0 4px rgba(251, 191, 36, 0.2);
+      animation: pulse 2s infinite;
+    }
+
+    .peg-hole.valid-move {
+      background: var(--valid-move);
+      border-color: #10b981;
+      box-shadow: 
+        0 4px 20px rgba(52, 211, 153, 0.4),
+        0 0 0 3px rgba(52, 211, 153, 0.2);
+      animation: bounce 1s infinite alternate;
+    }
+
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 8px 25px rgba(251, 191, 36, 0.4), 0 0 0 4px rgba(251, 191, 36, 0.2); }
+      50% { box-shadow: 0 8px 25px rgba(251, 191, 36, 0.6), 0 0 0 6px rgba(251, 191, 36, 0.3); }
+    }
+
+    @keyframes bounce {
+      from { transform: scale(1); }
+      to { transform: scale(1.05); }
+    }
+
+    /* Responsive Design */
+    @media (max-width: 640px) {
+      body {
+        padding: 0.5rem;
+      }
+
+      .game-container {
+        padding: 1.5rem;
+      }
+
+      .game-title {
+        font-size: 2rem;
+      }
+
+      .peg-hole {
+        width: 50px;
+        height: 50px;
+      }
+
+      .board {
+        padding: 1.5rem;
+      }
+
+      .controls {
+        gap: 0.5rem;
+      }
+
+      .btn {
+        padding: 0.625rem 1.25rem;
+        font-size: 0.9rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .game-title {
+        font-size: 1.75rem;
+      }
+
+      .peg-hole {
+        width: 45px;
+        height: 45px;
+      }
+
+      .board-row {
+        gap: 0.375rem;
+      }
+
+      .board {
+        gap: 0.375rem;
+        padding: 1.25rem;
+      }
+    }
+
+    @media (max-width: 360px) {
+      .peg-hole {
+        width: 40px;
+        height: 40px;
+      }
+
+      .board-row {
+        gap: 0.25rem;
+      }
+    }
+
+    /* Mejoras de accesibilidad */
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+
+    .peg-hole:focus {
+      outline: 2px solid var(--selected);
+      outline-offset: 2px;
+    }
+  </style>
+</head>
+<body>
+  <div class="game-container">
+    <div class="game-header">
+      <h1 class="game-title">🧩 Pyramid Peg</h1>
+      <p class="game-subtitle">Desafía tu mente con este clásico juego de estrategia</p>
+    </div>
+    
+    <div class="controls">
+      <button class="btn" onclick="reiniciarJuego()">🔄 Reiniciar</button>
+      <button class="btn" onclick="cambiarInicio()">🎲 Cambiar inicio</button>
+    </div>
+
+    <div class="status-container">
+      <div id="contador" class="counter">Clavijas restantes: 14</div>
+      <div id="status" class="status">Selecciona una clavija para mover</div>
+    </div>
+
+    <div class="board">
+      <div class="board-row">
+        <div class="peg-hole" data-row="0" data-col="0" tabindex="0"></div>
+      </div>
+      <div class="board-row">
+        <div class="peg-hole" data-row="1" data-col="0" tabindex="0"></div>
+        <div class="peg-hole" data-row="1" data-col="1" tabindex="0"></div>
+      </div>
+      <div class="board-row">
+        <div class="peg-hole" data-row="2" data-col="0" tabindex="0"></div>
+        <div class="peg-hole" data-row="2" data-col="1" tabindex="0"></div>
+        <div class="peg-hole" data-row="2" data-col="2" tabindex="0"></div>
+      </div>
+      <div class="board-row">
+        <div class="peg-hole" data-row="3" data-col="0" tabindex="0"></div>
+        <div class="peg-hole" data-row="3" data-col="1" tabindex="0"></div>
+        <div class="peg-hole" data-row="3" data-col="2" tabindex="0"></div>
+        <div class="peg-hole" data-row="3" data-col="3" tabindex="0"></div>
+      </div>
+      <div class="board-row">
+        <div class="peg-hole" data-row="4" data-col="0" tabindex="0"></div>
+        <div class="peg-hole" data-row="4" data-col="1" tabindex="0"></div>
+        <div class="peg-hole" data-row="4" data-col="2" tabindex="0"></div>
+        <div class="peg-hole" data-row="4" data-col="3" tabindex="0"></div>
+        <div class="peg-hole" data-row="4" data-col="4" tabindex="0"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    class PyramidPegGame {
+      constructor() {
+        this.selectedPeg = null;
+        this.pegCount = 14;
+        this.gameBoard = [];
+        this.currentStartIndex = 0;
+        this.gameState = 'playing'; // 'playing', 'won', 'lost'
+        
+        this.startPositions = [
+          {row: 0, col: 0, name: "Arriba"},
+          {row: 2, col: 1, name: "Centro"},
+          {row: 4, col: 2, name: "Abajo Centro"},
+          {row: 4, col: 0, name: "Abajo Izquierda"},
+          {row: 4, col: 4, name: "Abajo Derecha"}
+        ];
+
+        this.init();
+      }
+
+      init() {
+        this.initBoard();
+        this.bindEvents();
+        this.updateStatus("Selecciona una clavija para mover");
+      }
+
+      initBoard() {
+        // Resetear tablero
+        this.gameBoard = [];
+        for (let row = 0; row < 5; row++) {
+          this.gameBoard[row] = [];
+          for (let col = 0; col <= row; col++) {
+            this.gameBoard[row][col] = true;
+          }
+        }
+        
+        // Configurar posición inicial vacía
+        const startPos = this.startPositions[this.currentStartIndex];
+        this.gameBoard[startPos.row][startPos.col] = false;
+        this.pegCount = 14;
+        this.gameState = 'playing';
+
+        this.updateDisplay();
+        this.updateCounter();
+      }
+
+      bindEvents() {
+        document.querySelectorAll('.peg-hole').forEach(hole => {
+          hole.addEventListener('click', (e) => this.handlePegClick(e.target));
+          hole.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              this.handlePegClick(e.target);
+            }
+          });
+        });
+      }
+
+      updateDisplay() {
+        document.querySelectorAll('.peg-hole').forEach(hole => {
+          const row = parseInt(hole.dataset.row);
+          const col = parseInt(hole.dataset.col);
+
+          // Limpiar clases
+          hole.className = "peg-hole";
+          
+          // Aplicar estado según el tablero
+          if (this.gameBoard[row][col]) {
+            hole.classList.add("peg");
+            hole.setAttribute('aria-label', `Clavija en fila ${row + 1}, columna ${col + 1}`);
+          } else {
+            hole.classList.add("empty");
+            hole.setAttribute('aria-label', `Hueco vacío en fila ${row + 1}, columna ${col + 1}`);
+          }
+        });
+      }
+
+      updateCounter() {
+        const counter = document.getElementById("contador");
+        counter.textContent = `Clavijas restantes: ${this.pegCount}`;
+        
+        // Añadir animación sutil cuando cambia el contador
+        counter.style.transform = 'scale(1.05)';
+        setTimeout(() => counter.style.transform = 'scale(1)', 150);
+      }
+
+      updateStatus(message, type = 'default') {
+        const statusEl = document.getElementById("status");
+        statusEl.textContent = message;
+        statusEl.className = `status ${type}`;
+        statusEl.setAttribute('aria-live', 'polite');
+      }
+
+      isValidMove(fromRow, fromCol, toRow, toCol) {
+      // límites
+      if (toRow < 0 || toRow >= 5 || toCol < 0 || toCol > toRow) return false;
+      if (this.gameBoard[toRow][toCol] || !this.gameBoard[fromRow][fromCol]) return false;
+    
+      const rowDiff = Math.abs(toRow - fromRow);
+      const colDiff = Math.abs(toCol - fromCol);
+    
+      // SOLO estos patrones son válidos:
+      const isPatternValid =
+        (rowDiff === 0 && colDiff === 2) ||      // izquierda/derecha (horizontal)
+        (rowDiff === 2 && colDiff === 0) ||      // arriba-izq / abajo-izq
+        (rowDiff === 2 && colDiff === 2);        // arriba-der / abajo-der
+    
+      if (!isPatternValid) return false;
+    
+      // posición intermedia
+      const midRow = (fromRow + toRow) / 2;
+      const midCol = (fromCol + toCol) / 2;
+    
+      if (midRow < 0 || midRow >= 5 || midCol < 0 || midCol > midRow) return false;
+    
+      // debe haber clavija en medio
+      return this.gameBoard[midRow][midCol];
+      }
+
+      getValidMoves(row, col) {
+        if (!this.gameBoard[row][col]) return [];
+
+        const moves = [];
+        const directions = [
+          {dr: -2, dc: -2}, // Arriba-izquierda
+          {dr: -2, dc: 0},  // Arriba-derecha
+          {dr: 2, dc: 0},   // Abajo-izquierda
+          {dr: 2, dc: 2},   // Abajo-derecha
+          {dr: 0, dc: -2},  // Izquierda
+          {dr: 0, dc: 2}    // Derecha
+        ];
+
+        directions.forEach(dir => {
+          const newRow = row + dir.dr;
+          const newCol = col + dir.dc;
+          if (this.isValidMove(row, col, newRow, newCol)) {
+            moves.push({row: newRow, col: newCol});
+          }
+        });
+
+        return moves;
+      }
+
+      makeMove(fromRow, fromCol, toRow, toCol) {
+        if (!this.isValidMove(fromRow, fromCol, toRow, toCol)) return false;
+
+        const midRow = Math.floor((fromRow + toRow) / 2);
+        const midCol = Math.floor((fromCol + toCol) / 2);
+
+        // Realizar el movimiento
+        this.gameBoard[fromRow][fromCol] = false;
+        this.gameBoard[midRow][midCol] = false;
+        this.gameBoard[toRow][toCol] = true;
+        this.pegCount--;
+
+        this.updateDisplay();
+        this.updateCounter();
+        this.checkGameStatus();
+        
+        return true;
+      }
+
+      checkGameStatus() {
+        if (this.pegCount === 1) {
+          this.gameState = 'won';
+          this.updateStatus("🎉 ¡Increíble! ¡Has ganado el juego!", "win");
+          this.celebrateWin();
+          return;
+        }
+
+        // Verificar si hay movimientos disponibles
+        let hasValidMoves = false;
+        outerLoop: for (let row = 0; row < 5; row++) {
+          for (let col = 0; col <= row; col++) {
+            if (this.gameBoard[row][col] && this.getValidMoves(row, col).length > 0) {
+              hasValidMoves = true;
+              break outerLoop;
+            }
+          }
+        }
+
+        if (!hasValidMoves) {
+          this.gameState = 'lost';
+          const rating = this.getRating(this.pegCount);
+          this.updateStatus(`😔 ${rating} Quedaron ${this.pegCount} clavijas.`, "lose");
+        } else {
+          this.updateStatus("Selecciona una clavija para mover");
+        }
+      }
+
+      getRating(pegsLeft) {
+        if (pegsLeft === 1) return "¡Perfecto!";
+        if (pegsLeft <= 3) return "¡Excelente!";
+        if (pegsLeft <= 5) return "¡Muy bueno!";
+        if (pegsLeft <= 7) return "¡Bueno!";
+        return "¡Sigue intentando!";
+      }
+
+      celebrateWin() {
+        // Añadir efectos visuales de celebración
+        document.querySelectorAll('.peg-hole.peg').forEach((peg, index) => {
+          setTimeout(() => {
+            peg.style.animation = 'celebrateWin 0.6s ease-out';
+          }, index * 100);
+        });
+      }
+
+      clearSelection() {
+        document.querySelectorAll(".peg-hole").forEach(hole => {
+          hole.classList.remove("selected", "valid-move");
+        });
+        this.selectedPeg = null;
+      }
+
+      handlePegClick(hole) {
+        if (this.gameState !== 'playing') return;
+
+        const row = parseInt(hole.dataset.row);
+        const col = parseInt(hole.dataset.col);
+
+        if (hole.classList.contains("empty")) {
+          // Intentar mover a posición vacía
+          if (this.selectedPeg && this.isValidMove(this.selectedPeg.row, this.selectedPeg.col, row, col)) {
+            this.makeMove(this.selectedPeg.row, this.selectedPeg.col, row, col);
+            this.clearSelection();
+          } else {
+            this.clearSelection();
+            this.updateStatus("Movimiento inválido. Selecciona una clavija.");
+          }
+        } else if (hole.classList.contains("peg")) {
+          // Seleccionar clavija
+          this.clearSelection();
+          const validMoves = this.getValidMoves(row, col);
+          
+          if (validMoves.length > 0) {
+            this.selectedPeg = {row, col};
+            hole.classList.add("selected");
+            
+            // Marcar movimientos válidos
+            validMoves.forEach(move => {
+              const targetHole = document.querySelector(`[data-row="${move.row}"][data-col="${move.col}"]`);
+              if (targetHole) {
+                targetHole.classList.add("valid-move");
+              }
+            });
+            
+            this.updateStatus(`Clavija seleccionada. ${validMoves.length} movimiento(s) disponible(s).`);
+          } else {
+            this.updateStatus("Esta clavija no puede moverse. Selecciona otra.");
+          }
+        }
+      }
+
+      restart() {
+        this.clearSelection();
+        this.initBoard();
+        this.updateStatus("Juego reiniciado. Selecciona una clavija para mover.");
+      }
+
+      changeStartPosition() {
+        this.currentStartIndex = (this.currentStartIndex + 1) % this.startPositions.length;
+        const newStartPos = this.startPositions[this.currentStartIndex];
+        this.restart();
+        this.updateStatus(`Posición inicial: ${newStartPos.name}`);
+      }
+    }
+
+    // Funciones globales para los botones
+    let game;
+
+    function reiniciarJuego() {
+      game.restart();
+    }
+
+    function cambiarInicio() {
+      game.changeStartPosition();
+    }
+
+    // Inicializar juego cuando se carga la página
+    document.addEventListener("DOMContentLoaded", () => {
+      game = new PyramidPegGame();
+    });
+  </script>
+</body>
+</html>
