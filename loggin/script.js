@@ -88,7 +88,10 @@ function navigateToPeg() {
     saveTheme(currentTheme);
     window.location.href = 'peg.html';
 }
-
+function navigateToMemory() {
+    saveTheme(currentTheme);
+    window.location.href = 'memory.html';
+}
 
 // Inicialización común para todas las páginas
 function initSharedComponents() {
@@ -152,6 +155,9 @@ function startGame(gameType) {
         navigateToQuince();
     }
     if (gameType === 'piramides-peg') {
+        navigateToPeg();
+    }
+    if (gameType === 'memory') {
         navigateToPeg();
     }
     else {
