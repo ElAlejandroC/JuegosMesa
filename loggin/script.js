@@ -84,6 +84,10 @@ function navigateToQuince() {
     saveTheme(currentTheme);
     window.location.href = 'quince.html';
 }
+function navigateToPeg() {
+    saveTheme(currentTheme);
+    window.location.href = 'peg.html';
+}
 
 
 // Inicialización común para todas las páginas
@@ -146,6 +150,9 @@ function startGame(gameType) {
     }
     if (gameType === 'ordena-15') {
         navigateToQuince();
+    }
+    if (gameType === 'piramides-peg') {
+        navigateToPeg();
     }
     else {
         alert('Juego no implementado aún: ' + gameType);
@@ -339,6 +346,4 @@ function resetGame() {
     }
     
     initHanoiGame();
-
 }
-
