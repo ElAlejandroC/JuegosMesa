@@ -1,6 +1,14 @@
 const canvas = document.querySelector('.canvas');
 const tiles = Array.from(canvas.children);
 const selectorModo = document.getElementById('modo');
+let moves = 0;
+let seconds = 0;
+let minutes = 0;
+let timer = null;
+
+// --- DOM Elements ---
+const movesCountElement = document.getElementById("movesCount");
+const timeCountElement = document.getElementById("timeCount");
 
 // Reconvertimos HTML a array lógico
 function getTablero() {
@@ -82,7 +90,7 @@ function esGanado(tablero) {
                 if (tablero[i] !== 16 - i) return false;
             }
             return true;
-            
+
         case 'vertical':
             const vertical = [1,5,9,13,2,6,10,14,3,7,11,15,4,8,12,0];
             for (let i = 0; i < 16; i++) if (tablero[i] !== vertical[i]) return false;
@@ -134,6 +142,58 @@ btnSol.addEventListener('click', () => {
     ? 'Ocultar solución'
     : 'Mostrar solución';
 });
+function navigateToMenu() {
+    window.location.href = 'menu.html';
+}
+
+// --- Funciones de movimientos ---
+function incrementMoves() {
+  moves++;
+  movesCountElement.textContent = moves;
+}
+
+// --- Funciones de tiempo ---
+function startTimer() {
+  if (timer) return; // evita múltiples timers
+
+  timer = setInterval(() => {
+    seconds++;
+    if (seconds >= 60) {
+      seconds = 0;
+      minutes++;
+    }
+
+    const formattedMinutes = String(minutes).padStart(2, "0");
+    const formattedSeconds = String(seconds).padStart(2, "0");
+
+    timeCountElement.textContent = `${formattedMinutes}:${formattedSeconds}`;
+  }, 1000);
+}
+
+function resetTimer() {
+  clearInterval(timer);
+  timer = null;
+  seconds = 0;
+  minutes = 0;
+  timeCountElement.textContent = "00:00";
+}
+
+// --- Reset general ---
+function resetGame() {
+  moves = 0;
+  movesCountElement.textContent = moves;
+  resetTimer();
+  startTimer();
+  // aquí deberías añadir la lógica para remezclar fichas
+}
+
+// --- Ejemplo de integración con las fichas ---
+document.querySelectorAll(".tile").forEach(tile => {
+  tile.addEventListener("click", () => {
+    // Aquí pondrías tu lógica de movimiento válido
+    incrementMoves();
+    startTimer(); // arranca el cronómetro al primer movimiento
+  });
+});
 
 actualizarDataSolution();
-
