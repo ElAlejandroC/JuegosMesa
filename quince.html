@@ -13,7 +13,12 @@
       <div class="game-header">
         <h1 class="game-title">Ordena 15</h1>
         <div class="game-controls">
+          <div class="stats">
+            <span>Movimientos: <span id="movesCount">0</span></span>
+            <span>Tiempo: <span id="timeCount">00:00</span></span>
+          </div>
           <button class="control-btn shuffle">🔀 Mezclar</button>
+          <button class="control-btn" onclick="navigateToMenu()">Menú</button>
           <button class="control-btn" id="mostrarSolucion">Mostrar solución</button>
           <select id="modo" class="control-btn">
             <option value="normal">Normal</option>
@@ -31,7 +36,6 @@
         <div class="tile">9</div><div class="tile">10</div><div class="tile">11</div><div class="tile">12</div>
         <div class="tile">13</div><div class="tile">14</div><div class="tile">15</div><div class="tile"></div>
       </div>
-    </div>
   </div>
 </body>
 </html>
