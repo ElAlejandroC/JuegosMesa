@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="loggin/styles.css">
-    <script src="loggin/script.js" defer></script>
+    <script src="Hanoii/script.js" defer></script>
     <title>Hannoi</title>
 </head>
 <body onload="initHanoiGame()">
@@ -31,6 +31,9 @@
                     </div>
                     <button class="control-btn" onclick="goToMenu()">Menú</button>
                 </div>
+                <button class="control-btn" onclick="decreaseDifficulty()">-</button>
+                <button class="control-btn" onclick="increaseDifficulty()">+</button>
+
                 
                 <div class="stats">
                     <span>Tiempo total: <span id="timeCount">00:00</span></span>
@@ -51,7 +54,7 @@
                 </div>
                 
                 <div class="victory-buttons">
-                    <button class="menu-btn" onclick="goToMenu()">Ir a Menú Principal</button>
+                    <button class="menu-btn" onclick="navigateToMenu()">Ir a Menú Principal</button>
                     <button class="control-btn" onclick="resetGame()">Reiniciar</button>
                 </div>
             </div>
