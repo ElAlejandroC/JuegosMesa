@@ -158,7 +158,7 @@ function startGame(gameType) {
         navigateToPeg();
     }
     if (gameType === 'memory') {
-        navigateToPeg();
+        navigateToMemory();
     }
     else {
         alert('Juego no implementado aún: ' + gameType);
@@ -353,3 +353,4 @@ function resetGame() {
     
     initHanoiGame();
 }
+
